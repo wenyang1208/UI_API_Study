@@ -303,12 +303,23 @@ namespace WinFormsApp2
             if (pval.FormUID == "TB1_DVDAvailability" & pval.ItemUID == "rentTo" & pval.BeforeAction == false & pval.EventType == SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED) {
                 SBO_Application.MessageBox("Caught click on Rent DVD Button");
             }
-            if (pval.FormUID == "TB1_DVDAvailabilty" & pval.BeforeAction == false & pval.EventType == SAPbouiCOM.BoEventTypes.et_CHOOSE_FROM_LIST) {
+            if (pval.FormUID == "TB1_DVDAvailability" & pval.BeforeAction == false & pval.ItemUID == "tx_rentTo" & pval.EventType == SAPbouiCOM.BoEventTypes.et_CHOOSE_FROM_LIST) {
                 SAPbouiCOM.ChooseFromListEvent oCFLEvent;
                 SAPbouiCOM.Form oForm;
                 oCFLEvent = (SAPbouiCOM.ChooseFromListEvent) pval;
                 oForm = SBO_Application.Forms.Item(FormUID);
-                SBO_Application.MessageBox("ChooseFromListEvent picked");
+
+                // define data table object, to return the selected BP to the form
+                SAPbouiCOM.DBDataSource dBDataSource;
+                SAPbouiCOM.DataTable oDataTable;
+                oDataTable = oCFLEvent.SelectedObjects;
+
+                // GetValue(column, rowIndex)
+                // GetValue(0, 0) retrieves the value from the first column of the first selected row, which is often the most relevant data 
+                var selectedCardCode = oDataTable.GetValue(0,0);
+                oForm.DataSources.UserDataSources.Item("ds_RentTo").ValueEx = selectedCardCode.ToString(); // ValueEx: Allow both read/write, Value: Allow read only
+                // Connect database with the UI
+                dBDataSource = oForm.DataSources.DBDataSources.Item("@TB1_VIDS");
             }
         }
 
