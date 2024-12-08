@@ -303,6 +303,13 @@ namespace WinFormsApp2
             if (pval.FormUID == "TB1_DVDAvailability" & pval.ItemUID == "rentTo" & pval.BeforeAction == false & pval.EventType == SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED) {
                 SBO_Application.MessageBox("Caught click on Rent DVD Button");
             }
+            if (pval.FormUID == "TB1_DVDAvailabilty" & pval.BeforeAction == false & pval.EventType == SAPbouiCOM.BoEventTypes.et_CHOOSE_FROM_LIST) {
+                SAPbouiCOM.ChooseFromListEvent oCFLEvent;
+                SAPbouiCOM.Form oForm;
+                oCFLEvent = (SAPbouiCOM.ChooseFromListEvent) pval;
+                oForm = SBO_Application.Forms.Item(FormUID);
+                SBO_Application.MessageBox("ChooseFromListEvent picked");
+            }
         }
 
         // Event filter: Helps the application listen only to specific events occurring on specific forms
@@ -315,6 +322,7 @@ namespace WinFormsApp2
             oFilter = oFilters.Add(SAPbouiCOM.BoEventTypes.et_FORM_LOAD);
             oFilter = oFilters.Add(SAPbouiCOM.BoEventTypes.et_CLICK);
             oFilter = oFilters.Add(SAPbouiCOM.BoEventTypes.et_MENU_CLICK);
+            oFilter = oFilters.Add(SAPbouiCOM.BoEventTypes.et_CHOOSE_FROM_LIST);
 
             oFilter.AddEx("139");
             oFilter.AddEx("TB1_DVDAvailability");
@@ -459,9 +467,11 @@ namespace WinFormsApp2
             oEditText.DataBind.SetBound(true, "", "ds_Rented");
             var rentedValue = oDBDataSource.GetValue("U_Rented", 0);
             oForm.DataSources.UserDataSources.Item("ds_Rented").ValueEx = rentedValue;
+
+            CreateChooseFromList(oForm);
         }
 
-        // for rented field in the business partner master data
+        // for rented field in the business partner master data, act as the list
         private static void CreateChooseFromList(SAPbouiCOM.Form oForm) { 
             // collection of choose from lists in a form
             SAPbouiCOM.ChooseFromListCollection oCFLs;
@@ -482,7 +492,7 @@ namespace WinFormsApp2
             SAPbouiCOM.Item oItem;
             SAPbouiCOM.EditText oEditText;
 
-            oItem = oForm.Items.Item("tx_RentTo");
+            oItem = oForm.Items.Item("tx_rentTo");
             oEditText = ((SAPbouiCOM.EditText)(oItem.Specific));
             oEditText.ChooseFromListUID = "CardCodeCFL";
         }
