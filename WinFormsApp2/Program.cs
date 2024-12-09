@@ -44,10 +44,10 @@ namespace WinFormsApp2
             SBO_Application.MessageBox("Connected to UI API", 1, "Continue", "Cancel");
 
             // option with connection with SSO
-            ConnectWithSSO();
+            //ConnectWithSSO();
 
             // option with connection with shared memory / multiple add-ons
-            //ConnectWithSharedMemory();
+            ConnectWithSharedMemory();
         }
 
         // DI API connection via cookie
@@ -321,6 +321,55 @@ namespace WinFormsApp2
                 // Connect database with the UI
                 dBDataSource = oForm.DataSources.DBDataSources.Item("@TB1_VIDS");
             }
+            /*
+             * ### NOT SURE ABOUT THE REASON BUT ONLY APPLICABLE WHEN CONNECTED WITH SHARED MEMORY
+             */
+            if (pval.FormUID == "TB1_DVDAvailability" & pval.BeforeAction == false & pval.ItemUID == "1" & pval.EventType == SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED) {
+                SAPbouiCOM.Form oForm = SBO_Application.Forms.Item(FormUID);
+                SAPbouiCOM.Item oItem = oForm.Items.Item(pval.ItemUID);
+                SAPbouiCOM.Button oButton = (SAPbouiCOM.Button) oItem.Specific;
+                if (oButton.Caption == "Add") {
+                    // Item -> EditText -> UDT.UDF -> Add
+                    SAPbouiCOM.Item ItemName = oForm.Items.Item("tx_name");
+                    SAPbouiCOM.EditText textName = (SAPbouiCOM.EditText) ItemName.Specific;
+
+                    SAPbouiCOM.Item ItemAisle = oForm.Items.Item("tx_aisle");
+                    SAPbouiCOM.EditText textAisle = (SAPbouiCOM.EditText)ItemAisle.Specific;
+
+                    SAPbouiCOM.Item ItemSection = oForm.Items.Item("tx_section");
+                    SAPbouiCOM.EditText textSection = (SAPbouiCOM.EditText)ItemSection.Specific;
+
+                    SAPbouiCOM.Item ItemRented = oForm.Items.Item("tx_rented");
+                    SAPbouiCOM.EditText textRented = (SAPbouiCOM.EditText)ItemRented.Specific;
+
+                    SAPbouiCOM.Item ItemRentTo = oForm.Items.Item("tx_rentTo");
+                    SAPbouiCOM.EditText textRentTo = (SAPbouiCOM.EditText)ItemRentTo.Specific;
+
+                    // SAPbobsCOM
+                    SAPbobsCOM.UserTable oUDT;
+                    oUDT = diCompany.UserTables.Item("TB1_VIDS");
+
+                    // UDF
+                    oUDT.Code = textName.Value;
+                    oUDT.Name = textName.Value;
+                    oUDT.UserFields.Fields.Item("U_AISLE").Value = textAisle.Value;
+                    oUDT.UserFields.Fields.Item("U_SECTION").Value = textSection.Value;
+                    oUDT.UserFields.Fields.Item("U_RENTED").Value = textRented.Value;
+                    oUDT.UserFields.Fields.Item("U_CARDCODE").Value = textRentTo.Value;
+
+                    int ret = oUDT.Add();
+
+                    if (ret != 0)
+                    {
+                        SBO_Application.MessageBox("Add entry failed: " + diCompany.GetLastErrorDescription());
+                    }
+                    else {
+                        SBO_Application.MessageBox("Add entry : " + textName.Value);
+                    }
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(oUDT);
+                    GC.Collect();
+                }
+            }
         }
 
         // Event filter: Helps the application listen only to specific events occurring on specific forms
@@ -421,6 +470,35 @@ namespace WinFormsApp2
                 SBO_Application.Menus.RemoveEx("TB1_DVDStore");
                 SBO_Application.Menus.RemoveEx("TB1_Avail");
                 SBO_Application.Menus.RemoveEx("TB_Remove");
+            }
+            // switch to the inserting mode and clean all values from the form.
+            if (pval.MenuUID == "1282" & pval.BeforeAction == true) // 1282 represents 'Add' menu
+            {
+                SAPbouiCOM.Form oForm = SBO_Application.Forms.Item("TB1_DVDAvailability");
+
+                // properties
+                SAPbouiCOM.Item oItemName = oForm.Items.Item("tx_name");
+                SAPbouiCOM.EditText oEditTextName = ((SAPbouiCOM.EditText)(oItemName.Specific));
+                oEditTextName.Value = "";
+
+                SAPbouiCOM.Item oItemAisle = oForm.Items.Item("tx_aisle");
+                SAPbouiCOM.EditText oEditTextAisle = ((SAPbouiCOM.EditText)(oItemAisle.Specific));
+                oEditTextAisle.Value = "";
+
+                SAPbouiCOM.Item oItemSection = oForm.Items.Item("tx_section");
+                SAPbouiCOM.EditText oEditTextSection = ((SAPbouiCOM.EditText)(oItemSection.Specific));
+                oEditTextSection.Value = "";
+
+                SAPbouiCOM.Item oItemRented = oForm.Items.Item("tx_rented");
+                SAPbouiCOM.EditText oEditTextRented = ((SAPbouiCOM.EditText)(oItemRented.Specific));
+                oEditTextRented.Value = "";
+
+                SAPbouiCOM.Item oItemRentTo = oForm.Items.Item("tx_rentTo");
+                SAPbouiCOM.EditText oEditTextRentTo = ((SAPbouiCOM.EditText)(oItemRentTo.Specific));
+                oEditTextRentTo.Value = "";
+
+                // default - active textbox (become yellow)
+                oForm.ActiveItem = "tx_name";
             }
         }
 
